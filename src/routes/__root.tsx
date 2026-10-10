@@ -19,7 +19,12 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Steep & Co. — Small-batch loose-leaf tea',
+      },
+      {
+        name: 'description',
+        content:
+          'Steep & Co. sources small-batch, single-origin loose-leaf tea and ships it fresh. Build a custom box and join the monthly tea letter.',
       },
     ],
     links: [

@@ -1,7 +1,17 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import ThemeToggle from './ThemeToggle'
 
+const NAV_LINKS = [
+  { label: 'Home', href: '#top' },
+  { label: 'Teas', href: '#teas' },
+  { label: 'Story', href: '#story' },
+  { label: 'Newsletter', href: '#newsletter' },
+]
+
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
       <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
@@ -11,33 +21,16 @@ export default function Header() {
             className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)] sm:px-4 sm:py-2"
           >
             <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
-            TanStack Start
+            Steep &amp; Co.
           </Link>
         </h2>
 
-        <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-none sm:w-auto sm:flex-nowrap sm:pb-0">
-          <Link
-            to="/"
-            className="nav-link"
-            activeProps={{ className: 'nav-link is-active' }}
-          >
-            Home
-          </Link>
-          <Link
-            to="/about"
-            className="nav-link"
-            activeProps={{ className: 'nav-link is-active' }}
-          >
-            About
-          </Link>
-          <a
-            href="https://tanstack.com/start/latest/docs/framework/react/overview"
-            className="nav-link"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Docs
-          </a>
+        <div className="hidden flex-wrap items-center gap-x-4 gap-y-1 text-sm font-semibold sm:flex">
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href} className="nav-link">
+              {link.label}
+            </a>
+          ))}
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -47,7 +40,7 @@ export default function Header() {
             rel="noreferrer"
             className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
           >
-            <span className="sr-only">Follow TanStack on X</span>
+            <span className="sr-only">Follow Steep &amp; Co. on X</span>
             <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
               <path
                 fill="currentColor"
@@ -61,7 +54,7 @@ export default function Header() {
             rel="noreferrer"
             className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
           >
-            <span className="sr-only">Go to TanStack GitHub</span>
+            <span className="sr-only">Steep &amp; Co. on GitHub</span>
             <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
               <path
                 fill="currentColor"
@@ -71,6 +64,44 @@ export default function Header() {
           </a>
 
           <ThemeToggle />
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            aria-label="Toggle navigation menu"
+            data-testid="mobile-menu-toggle"
+            className="rounded-xl border border-[var(--chip-line)] bg-[var(--chip-bg)] p-2 text-[var(--sea-ink)] sm:hidden"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                d="M4 7h16M4 12h16M4 17h16"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div
+          id="mobile-menu"
+          className={`order-3 w-full flex-col gap-1 text-sm font-semibold sm:hidden ${
+            menuOpen ? 'flex' : 'hidden'
+          }`}
+        >
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className="nav-link py-2"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
       </nav>
     </header>

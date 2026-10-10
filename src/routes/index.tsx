@@ -1,87 +1,101 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useMemo, useReducer, useState } from 'react'
+import {
+  TEAS,
+  filterTeas,
+  TEA_CATEGORIES,
+  type Tea,
+  type TeaCategoryFilter,
+} from '../data/teas.ts'
+import {
+  cartReducer,
+  cartTotals,
+  type CartLine,
+} from '../lib/cart.ts'
+import { HeroSection } from '../components/landing/HeroSection'
+import { TeaCatalog } from '../components/landing/TeaCatalog'
+import { OrderBuilder } from '../components/landing/OrderBuilder'
+import { StorySection } from '../components/landing/StorySection'
+import { NewsletterSignup } from '../components/landing/NewsletterSignup'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  component: TeaLanding,
+  head: () => ({
+    meta: [
+      {
+        title: 'Steep & Co. — Small-batch loose-leaf tea',
+      },
+      {
+        name: 'description',
+        content:
+          'Shop small-batch, single-origin loose-leaf tea from Steep & Co. Build a custom box, track your total, and join the monthly tea letter.',
+      },
+    ],
+  }),
+})
 
-function App() {
+function TeaLanding() {
+  const [lines, dispatch] = useReducer(cartReducer, [] as CartLine[])
+  const [category, setCategory] = useState<TeaCategoryFilter>('all')
+  const [notice, setNotice] = useState('')
+
+  const visibleTeas = useMemo(() => filterTeas(TEAS, category), [category])
+  const totals = useMemo(() => cartTotals(lines, TEAS), [lines])
+
+  const categoryCounts = useMemo(() => {
+    const counts = {} as Record<TeaCategoryFilter, number>
+    for (const option of TEA_CATEGORIES) {
+      counts[option.id] = filterTeas(TEAS, option.id).length
+    }
+    return counts
+  }, [])
+
+  const quantities = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const line of lines) {
+      map[line.teaId] = line.quantity
+    }
+    return map
+  }, [lines])
+
+  function handleAdd(tea: Tea) {
+    if (!tea.inStock) {
+      setNotice(`${tea.name} is sold out right now — check back soon.`)
+      return
+    }
+
+    setNotice('')
+    dispatch({ type: 'add', teaId: tea.id })
+  }
+
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">TanStack Start Base Template</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Start simple, ship quickly.
-        </h1>
-        <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          This base starter intentionally keeps things light: two routes, clean
-          structure, and the essentials you need to build from scratch.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/about"
-            className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
-          >
-            About This Starter
-          </a>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
-          >
-            Router Guide
-          </a>
-        </div>
-      </section>
-
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [
-            'Type-Safe Routing',
-            'Routes and links stay in sync across every page.',
-          ],
-          [
-            'Server Functions',
-            'Call server code from your UI without creating API boilerplate.',
-          ],
-          [
-            'Streaming by Default',
-            'Ship progressively rendered responses for faster experiences.',
-          ],
-          [
-            'Tailwind Native',
-            'Design quickly with utility-first styling and reusable tokens.',
-          ],
-        ].map(([title, desc], index) => (
-          <article
-            key={title}
-            className="island-shell feature-card rise-in rounded-2xl p-5"
-            style={{ animationDelay: `${index * 90 + 80}ms` }}
-          >
-            <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">
-              {title}
-            </h2>
-            <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="island-shell mt-8 rounded-2xl p-6">
-        <p className="island-kicker mb-2">Quick Start</p>
-        <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-[var(--sea-ink-soft)]">
-          <li>
-            Edit <code>src/routes/index.tsx</code> to customize the home page.
-          </li>
-          <li>
-            Update <code>src/components/Header.tsx</code> and{' '}
-            <code>src/components/Footer.tsx</code> for brand links.
-          </li>
-          <li>
-            Add routes in <code>src/routes</code> and tweak visual tokens in{' '}
-            <code>src/styles.css</code>.
-          </li>
-        </ul>
-      </section>
+    <main className="page-wrap px-4 pb-8 pt-10">
+      <HeroSection />
+      <TeaCatalog
+        teas={visibleTeas}
+        activeCategory={category}
+        onCategoryChange={setCategory}
+        categoryCounts={categoryCounts}
+        quantities={quantities}
+        onAdd={handleAdd}
+        onIncrement={(tea) => dispatch({ type: 'increment', teaId: tea.id })}
+        onDecrement={(tea) => dispatch({ type: 'decrement', teaId: tea.id })}
+      />
+      <OrderBuilder
+        lines={lines}
+        teas={TEAS}
+        totals={totals}
+        notice={notice}
+        onIncrement={(teaId) => dispatch({ type: 'increment', teaId })}
+        onDecrement={(teaId) => dispatch({ type: 'decrement', teaId })}
+        onRemove={(teaId) => dispatch({ type: 'remove', teaId })}
+        onClear={() => {
+          setNotice('')
+          dispatch({ type: 'clear' })
+        }}
+      />
+      <StorySection />
+      <NewsletterSignup />
     </main>
   )
 }
